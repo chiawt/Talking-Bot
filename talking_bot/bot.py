@@ -10,7 +10,8 @@ HELP = (
     "/add Title | YYYY-MM-DD HH:MM | minutes\n/delete search words\n\n"
     "/play song or artist — YouTube search link\n/youtube topic — YouTube search link\n\n"
     "Calendar changes require confirmation. Dates use BOT_TIMEZONE (default Asia/Singapore). "
-    "You can also type 'play relaxing piano'. Voice is not connected yet. Other text is echoed."
+    "You can also type 'play relaxing piano'. Send a voice recording (up to 60 seconds) "
+    "for calendar or YouTube requests after configuring voice. Other text is echoed."
 )
 
 
@@ -72,7 +73,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def unsupported(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if await authorized(update, context):
-        await update.effective_message.reply_text("Please send text or use /help. Voice support comes later.")
+        await update.effective_message.reply_text("Please send text, a voice recording, or use /help.")
 
 
 async def on_error(update, context):
@@ -83,6 +84,7 @@ async def on_error(update, context):
 def build_application(settings):
     from .calendar_handlers import calendar_callback, calendar_command
     from .youtube import youtube_command
+    from .voice import voice_message
     app = Application.builder().token(settings.token).build()
     app.bot_data["allowed_user_id"] = settings.allowed_user_id
     app.add_handler(CommandHandler("whoami", whoami))
@@ -92,6 +94,7 @@ def build_application(settings):
     app.add_handler(CommandHandler(["today", "tomorrow", "week", "add", "delete"], calendar_command))
     app.add_handler(CallbackQueryHandler(calendar_callback, pattern=r"^cal:(confirm|cancel|select):[a-f0-9]{16}$"))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
+    app.add_handler(MessageHandler(filters.VOICE, voice_message))
     app.add_handler(MessageHandler(filters.ALL, unsupported))
     app.add_error_handler(on_error)
     return app

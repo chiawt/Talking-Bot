@@ -77,13 +77,14 @@ def call_api(operation, *args):
         client.close()
 
 
-async def calendar_command(update, context):
+async def calendar_command(update, context, *, command_text=None):
     from .bot import authorized
     if not await authorized(update, context):
         return
     message = update.effective_message
-    command = message.text.split()[0].split('@')[0]
-    text = message.text.partition(' ')[2].strip()
+    command_text = message.text if command_text is None else command_text
+    command = command_text.split()[0].split('@')[0]
+    text = command_text.partition(' ')[2].strip()
     try:
         tz = zone()
         now = datetime.now(tz)

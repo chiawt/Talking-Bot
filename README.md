@@ -1,7 +1,7 @@
 # Talking Bot
 
 Private Telegram assistant with `/start`, `/help`, `/whoami`, text echo, and
-Google Calendar commands and YouTube search links. Voice messages are a future phase.
+Google Calendar commands, YouTube search links, and optional voice-message input.
 
 ## Windows PowerShell
 
@@ -70,8 +70,8 @@ the private Telegram conversation above is still required for live verification.
 
 ## Next phases
 
-Voice messages, natural-language calendar requests, and
-always-on deployment. Calendar setup below is optional for the basic echo bot.
+Spoken responses, natural-language typed requests, and always-on deployment.
+Calendar setup below is optional for the basic echo bot.
 
 ## Google Calendar (Phase 2)
 
@@ -181,3 +181,91 @@ folder, and restart with `.\.venv\Scripts\python.exe -m talking_bot`. Keep your
 existing `.env`, `credentials.json`, and `token.json` files. To verify this feature,
 send `/play relaxing piano`, tap the button, and check that YouTube shows the
 requested search. This live Telegram/device check is separate from automated tests.
+
+## Voice-message requests (Phase 4)
+
+Record a voice note in Telegram (the microphone button, not a video note or file
+attachment). The bot transcribes it, displays **I heard: …**, and interprets one
+calendar or YouTube request. Responses are text and links; spoken replies and live
+calls are not implemented. Voice does not turn the bot into a general AI chatbot.
+
+Voice is optional and requires an **OpenAI API key** with API billing/available
+quota. A ChatGPT subscription does not include API credits. Each accepted recording
+uses one Whisper transcription request and one `gpt-4o-mini` interpretation request.
+The bot sends your audio and transcript to OpenAI; it does not send calendar contents
+to OpenAI. Review the provider's data policies and pricing before enabling voice.
+Existing typed commands remain available without this key.
+
+### Windows setup
+
+1. Stop the bot with Ctrl+C and update:
+
+   ```powershell
+   Set-Location C:\talking_bot\Talking-Bot
+   git pull origin main
+   .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+   ```
+
+2. Install FFmpeg for audio conversion if not already installed:
+
+   ```powershell
+   winget install --id Gyan.FFmpeg --exact
+   ```
+
+   Close and reopen PowerShell after installation. Check `ffmpeg -version`. If
+   winget is unavailable, use an FFmpeg build linked from https://ffmpeg.org/download.html
+   and add its `bin` folder to PATH. Alternatively put the full executable path in
+   `.env` as `FFMPEG_PATH=C:\path\to\ffmpeg.exe`.
+
+3. Create an API key at https://platform.openai.com/api-keys and ensure API billing
+   is available. Open `.env` locally and append this line with your real key:
+
+   ```text
+   OPENAI_API_KEY=your_key_here
+   ```
+
+   Keep the existing Telegram and calendar settings. Never send the key in Telegram,
+   chat, screenshots, or GitHub. Set a project budget/alert in your OpenAI account.
+
+4. Reopen the project folder and start:
+
+   ```powershell
+   Set-Location C:\talking_bot\Talking-Bot
+   .\.venv\Scripts\python.exe -m talking_bot
+   ```
+
+### Voice examples and limitations
+
+- “What is on my calendar today?”
+- “What is on my calendar tomorrow?”
+- “Add a dentist appointment on December first, 2030, at three PM for one hour.”
+- “Delete my dentist appointment.” (Searches the next 30 days; choose an event,
+  then confirm. Recurring events and events with guests remain excluded.)
+- “Play relaxing piano music.”
+
+Use a future date you actually want, and include a title, date, unambiguous time,
+and duration for creation. Relative dates are interpreted using BOT_TIMEZONE and
+current local time. Missing or ambiguous details should produce a clarification;
+resend the complete request with those details (no follow-up conversation memory).
+Requests to move events, invite guests, manage recurrence, or perform multiple actions
+are unsupported. A deletion containing date constraints should ask you to select the
+exact event through `/delete`, rather than applying those constraints automatically.
+
+Model interpretation can be wrong. Always inspect the transcript AND the calendar
+preview's title, full date/time, and timezone before pressing Confirm. Cancel if any
+part is wrong. The model does not call calendar APIs directly: the application validates
+structured fields and routes through the same confirmation flow as typed commands.
+
+Recordings must be at most 60 seconds and 10 MB. Temporary audio is deleted after
+processing; no local transcript history is saved, but the transcript remains in your
+Telegram chat and the providers apply their own retention policies. Delete Telegram
+messages separately if desired. Do not run multiple instances with the same bot token.
+
+First test “Play relaxing piano” without touching your calendar. Then try a schedule
+request, followed by a clearly named test event and **Cancel**. Only confirm a real
+change after verifying every detail. Cloud tests do not establish live OpenAI or
+Telegram behavior; end-to-end verification needs your local credentials.
+
+If voice fails, check `ffmpeg -version`, the local API key, network access to
+`api.openai.com`, model availability, and OpenAI API billing/rate limits. Do not
+replace a key by posting it to the bot. Normal text commands still work.
