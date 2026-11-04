@@ -22,7 +22,7 @@ def main():
     if settings.allowed_user_id is None:
         print("Setup mode: send /whoami privately, set your user ID, then restart.")
     try:
-        build_application(settings).run_polling(allowed_updates=[Update.MESSAGE])
+        build_application(settings).run_polling(allowed_updates=[Update.MESSAGE, Update.CALLBACK_QUERY])
     except Exception as exc:
         print(f"Bot stopped ({type(exc).__name__}). Check your token, network, and other running instances.")
         return 1

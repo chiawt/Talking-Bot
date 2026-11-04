@@ -1,13 +1,15 @@
 import logging
 
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler, filters
 
 logger = logging.getLogger(__name__)
 HELP = (
     "/start — introduction\n/help — help\n/whoami — your Telegram ID\n\n"
-    "Send text and I will echo it to verify the connection. "
-    "Google Calendar, YouTube search, and voice commands are not connected yet."
+    "/today — today's events\n/tomorrow — tomorrow's events\n/week — next seven calendar days\n"
+    "/add Title | YYYY-MM-DD HH:MM | minutes\n/delete search words\n\n"
+    "Calendar changes require confirmation. Dates use BOT_TIMEZONE (default Asia/Singapore). "
+    "YouTube and voice are not connected yet. Other text is echoed."
 )
 
 
@@ -73,11 +75,14 @@ async def on_error(update, context):
 
 
 def build_application(settings):
+    from .calendar_handlers import calendar_callback, calendar_command
     app = Application.builder().token(settings.token).build()
     app.bot_data["allowed_user_id"] = settings.allowed_user_id
     app.add_handler(CommandHandler("whoami", whoami))
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler(["today", "tomorrow", "week", "add", "delete"], calendar_command))
+    app.add_handler(CallbackQueryHandler(calendar_callback, pattern=r"^cal:(confirm|cancel|select):[a-f0-9]{16}$"))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
     app.add_handler(MessageHandler(filters.ALL, unsupported))
     app.add_error_handler(on_error)
