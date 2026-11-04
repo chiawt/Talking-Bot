@@ -1,7 +1,7 @@
 # Talking Bot
 
 Private Telegram assistant with `/start`, `/help`, `/whoami`, text echo, and
-Google Calendar commands. YouTube links and voice messages are future phases.
+Google Calendar commands and YouTube search links. Voice messages are a future phase.
 
 ## Windows PowerShell
 
@@ -70,7 +70,7 @@ the private Telegram conversation above is still required for live verification.
 
 ## Next phases
 
-YouTube search links, voice messages, natural-language calendar requests, and
+Voice messages, natural-language calendar requests, and
 always-on deployment. Calendar setup below is optional for the basic echo bot.
 
 ## Google Calendar (Phase 2)
@@ -156,3 +156,28 @@ Local execution requires HTTPS access to `accounts.google.com`,
 `oauth2.googleapis.com`, and `www.googleapis.com`, as well as Telegram. Cloud
 execution needs the same allowed destinations and supported credential/proxy
 configuration. A local OAuth token is not automatically available in the cloud.
+
+## YouTube search links (Phase 3)
+
+No additional API key, Google scope, or dependency is needed. In your private
+Telegram chat, try:
+
+```text
+/play relaxing piano
+/youtube chicken rice recipe
+play songs by Adele
+```
+
+The bot returns a clickable YouTube search-results link and an **Open YouTube**
+button. Tap it to choose the song or video. This version does not select a
+specific video, download media, or automatically start/control playback. Only
+explicit `play …` or `youtube …` text requests are routed to media; other text
+still echoes. Searches are limited to 200 characters. Links open YouTube on your
+device; the bot itself makes no YouTube requests. Your search is sent to YouTube
+when you open the link.
+
+To update, stop the bot with Ctrl+C, run `git pull origin main` in the project
+folder, and restart with `.\.venv\Scripts\python.exe -m talking_bot`. Keep your
+existing `.env`, `credentials.json`, and `token.json` files. To verify this feature,
+send `/play relaxing piano`, tap the button, and check that YouTube shows the
+requested search. This live Telegram/device check is separate from automated tests.
