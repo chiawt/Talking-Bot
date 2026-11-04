@@ -269,3 +269,10 @@ Telegram behavior; end-to-end verification needs your local credentials.
 If voice fails, check `ffmpeg -version`, the local API key, network access to
 `api.openai.com`, model availability, and OpenAI API billing/rate limits. Do not
 replace a key by posting it to the bot. Normal text commands still work.
+
+## Windows automatic startup (Phase 5)
+
+To keep using your own computer, follow [the Windows startup guide](docs/windows-startup.md).
+It includes a Task Scheduler registration script, automatic restart after process
+failure, and steps to verify the bot after sign-in. No cloud server is provisioned.
+Your computer must stay on, awake, signed in, and connected to the Internet.
